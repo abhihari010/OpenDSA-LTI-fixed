@@ -5,6 +5,87 @@ $(function () {
     storeName: storeName,
   });
 
+  /* ---------------- CSV Download for Module Scores Table ---------------- */
+
+  $(document).on("click", "#btn-module-csv", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    downloadModuleCSV();
+  });
+
+  function setupDirectHandler() {
+    const btn = document.getElementById("btn-module-csv");
+    if (btn) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        downloadModuleCSV();
+      });
+    } else {
+      setTimeout(setupDirectHandler, 1000);
+    }
+  }
+  setTimeout(setupDirectHandler, 100);
+
+  function downloadModuleCSV() {
+    const table = $("#module-scores-table");
+    const headers = [];
+    const rows = [];
+
+    // Get module name from the selectize dropdown
+    const selectize = $("#select-for-modules")[0]?.selectize;
+    const moduleName = selectize
+      ? selectize.getItem(selectize.getValue())?.text()
+      : "module";
+    const sanitizedModuleName = moduleName
+      .replace(/[^a-z0-9]/gi, "_")
+      .replace(/_+/g, "_");
+
+    // Get headers
+    $("#mst-header-row th").each(function () {
+      headers.push(
+        $(this)
+          .text()
+          .trim()
+          .replace(/\s*\(\?\)\s*/g, ""),
+      );
+    });
+
+    console.log("Headers:", headers);
+
+    // Get data rows
+    $("#mst-body tr").each(function () {
+      const row = [];
+      $(this)
+        .find("td")
+        .each(function () {
+          const text = $(this).text().trim();
+          // Escape commas and quotes in CSV
+          const escaped =
+            text.includes(",") || text.includes('"')
+              ? `"${text.replace(/"/g, '""')}"`
+              : text;
+          row.push(escaped);
+        });
+      rows.push(row.join(","));
+    });
+
+    const csvContent = [headers.join(","), ...rows].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", `MS-Overview-${sanitizedModuleName}.csv`);
+    link.style.visibility = "hidden";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
   // Returns weeks start and end dates
   function getWeeksDates(start, end) {
     var sDate;
@@ -85,15 +166,15 @@ $(function () {
                 }
 
                 var termStartDate = new Date(
-                  data["term"][0]["starts_on"] + "T23:59:59-0000"
+                  data["term"][0]["starts_on"] + "T23:59:59-0000",
                 );
                 var termEndDate = new Date(
-                  data["term"][0]["ends_on"] + "T23:59:59-0000"
+                  data["term"][0]["ends_on"] + "T23:59:59-0000",
                 );
                 var currentDate = new Date();
                 if (currentDate <= termStartDate) {
                   reject(
-                    `Term starts in a future date ${data["term"][0]["starts_on"]}`
+                    `Term starts in a future date ${data["term"][0]["starts_on"]}`,
                   );
                   return;
                 }
@@ -101,7 +182,7 @@ $(function () {
                   termEndDate > currentDate ? currentDate : termEndDate;
                 let { weeksDates, daysHash, daysArr } = getWeeksDates(
                   termStartDate,
-                  termEndDate
+                  termEndDate,
                 );
 
                 var weeksDatesShort = weeksDates.map(function (x) {
@@ -273,7 +354,7 @@ $(function () {
 
                 updateStoreData(odsaStore, "odsaLookupData", odsaLookupData);
                 resolve(odsaLookupData);
-              }
+              },
             );
           }
         })
@@ -431,7 +512,7 @@ $(function () {
             trackingEndDate,
             hasExistingData ? result.data : null,
             lookups,
-            count
+            count,
           )
             .then((combined) => resolve(combined))
             .catch(reject);
@@ -447,7 +528,7 @@ $(function () {
     toDate,
     existingStoreData,
     lookups,
-    count
+    count,
   ) {
     const backoff = 1000 * count;
 
@@ -459,7 +540,7 @@ $(function () {
 
     try {
       const res = await fetch(`${urlBase}?from=${fromDate}&to=${toDate}`).then(
-        sleeper(backoff)
+        sleeper(backoff),
       );
 
       if (!res.ok) {
@@ -576,7 +657,7 @@ $(function () {
       (
         c ^
         (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
-      ).toString(16)
+      ).toString(16),
     );
   }
 
@@ -616,7 +697,7 @@ $(function () {
                 var UUID = uuidv4();
                 var sessionDate = daysArr[k].replace(/-/g, "");
                 var totalTime = parseFloat(
-                  (Math.random() * (i + 1) * 7).toFixed(2)
+                  (Math.random() * (i + 1) * 7).toFixed(2),
                 );
                 if (format == "csv") {
                   csvRecord =
@@ -879,7 +960,7 @@ $(function () {
                   for (var l = 0; l < sectionsArr.length; l++) {
                     sectionsData[ch_id][mod_id] = addRow(
                       sectionsData[ch_id][mod_id],
-                      users.length
+                      users.length,
                     );
                   }
                 }
@@ -948,7 +1029,7 @@ $(function () {
     var weeksNames = lookups["weeksNames"];
     var numOfWeeks = weeksData.length;
     var text = users.map(
-      (x) => x.first_name + " " + x.last_name + "<" + x.email + ">"
+      (x) => x.first_name + " " + x.last_name + "<" + x.email + ">",
     );
     var dataTables = null;
     var currentBoxTab = "weeks";
@@ -962,7 +1043,7 @@ $(function () {
         $("#students_info").append(
           '<caption style="caption-side: top" class="students_caption">' +
             caption +
-            "</caption>"
+            "</caption>",
         );
       }
 
@@ -1246,7 +1327,7 @@ $(function () {
           return { email: input };
         }
         var match = input.match(
-          new RegExp("^([^<]*)<" + REGEX_EMAIL + ">$", "i")
+          new RegExp("^([^<]*)<" + REGEX_EMAIL + ">$", "i"),
         );
         if (match) {
           var name = $.trim(match[1]);
@@ -1340,7 +1421,7 @@ $(function () {
           }
           dataTables = createDataTables(
             chosenStudentsInfo,
-            "Students reading time less than 25th percentile for " + refName
+            "Students reading time less than 25th percentile for " + refName,
           );
         } else if (buttonName == "50") {
           for (var i = 0; i < refData.length; i++) {
@@ -1357,7 +1438,7 @@ $(function () {
           }
           dataTables = createDataTables(
             chosenStudentsInfo,
-            "Students reading time less than 50th percentile for " + refName
+            "Students reading time less than 50th percentile for " + refName,
           );
         } else {
           chosenStudents = [];
@@ -1446,7 +1527,7 @@ $(function () {
           return { email: input };
         }
         var match = input.match(
-          new RegExp("^([^<]*)<" + REGEX_EMAIL + ">$", "i")
+          new RegExp("^([^<]*)<" + REGEX_EMAIL + ">$", "i"),
         );
         if (match) {
           var name = $.trim(match[1]);
@@ -1514,7 +1595,7 @@ $(function () {
       plotlyLineLayout.xaxis.rangeslider.range = range;
       plotlyLineLayout.sliders[0].steps = calculateSteps(
         "median",
-        currentLineTab
+        currentLineTab,
       );
 
       Plotly.react(plotlyLineDiv, plotlyLineData, plotlyLineLayout);
@@ -1648,7 +1729,7 @@ $(function () {
       var belowQuartileSteps = Object.keys(belowQuartileObj[unit]).map(
         function (x) {
           return parseInt(x, 10);
-        }
+        },
       );
       belowQuartileSteps.sort(Plotly.d3.descending);
 
@@ -1744,7 +1825,7 @@ $(function () {
       Plotly.newPlot(plotlyLineDiv, plotlyLineData, plotlyLineLayout).then(
         () => {
           resolve();
-        }
+        },
       );
     });
 
@@ -1753,7 +1834,7 @@ $(function () {
       var stepLabel = e.step.label;
       var chosenStudents = [];
       var selectedStudents = Object.keys(
-        belowQuartileObj[currentLineTab]
+        belowQuartileObj[currentLineTab],
       ).includes(stepLabel)
         ? belowQuartileObj[currentLineTab][stepLabel]
         : [];
@@ -1896,7 +1977,7 @@ $(function () {
           selectize_bar_user.items,
           selectize_bar_ch.items,
           [],
-          "chapters"
+          "chapters",
         );
       } else {
         $("#sel_modules").show();
@@ -1905,7 +1986,7 @@ $(function () {
           selectize_bar_user.items,
           [],
           selectize_bar_mod.items,
-          "modules"
+          "modules",
         );
       }
     });
@@ -1963,7 +2044,7 @@ $(function () {
           return { email: input };
         }
         var match = input.match(
-          new RegExp("^([^<]*)<" + REGEX_EMAIL + ">$", "i")
+          new RegExp("^([^<]*)<" + REGEX_EMAIL + ">$", "i"),
         );
         if (match) {
           var name = $.trim(match[1]);
@@ -1989,7 +2070,7 @@ $(function () {
           $(this).val(),
           selectize_bar_ch.items,
           selectize_bar_mod.items,
-          currentBarTab
+          currentBarTab,
         );
       };
       $(this).on("change", update);
@@ -2097,7 +2178,7 @@ $(function () {
                 traceY.push(
                   chaptersData[chaptersHash[selChapters[j]]][
                     usersHash[selUsers[i]]
-                  ]
+                  ],
                 );
               }
               plotlyBarData.push({
@@ -2141,7 +2222,7 @@ $(function () {
                 traceY.push(
                   modulesData[ch_id][modulesHash[selModules[j]]][
                     usersHash[selUsers[i]]
-                  ]
+                  ],
                 );
               }
               plotlyBarData.push({
@@ -2255,7 +2336,7 @@ $(function () {
       Plotly.newPlot(
         plotlySecBarDiv,
         plotlySecBarData,
-        plotlySecBarLayout
+        plotlySecBarLayout,
       ).then(() => {
         resolve();
       });
@@ -2314,7 +2395,7 @@ $(function () {
           return { email: input };
         }
         var match = input.match(
-          new RegExp("^([^<]*)<" + REGEX_EMAIL + ">$", "i")
+          new RegExp("^([^<]*)<" + REGEX_EMAIL + ">$", "i"),
         );
         if (match) {
           var name = $.trim(match[1]);
@@ -2406,7 +2487,7 @@ $(function () {
           for (var i = 0; i < selUsers.length; i++) {
             for (var j = 0; j < sectionsNamesArr.length; j++) {
               traceY.push(
-                sectionsData[selChapter][selModule][j][usersHash[selUsers[i]]]
+                sectionsData[selChapter][selModule][j][usersHash[selUsers[i]]],
               );
             }
             plotlySecBarData.push({
@@ -3045,7 +3126,7 @@ $(function () {
             ex.points = parseFloat(ex.points);
             points_possible += ex.points;
             headers.append(
-              "<th>" + ex.inst_exercise.name + " (" + ex.points + "pts)</th>"
+              "<th>" + ex.inst_exercise.name + " (" + ex.points + "pts)</th>",
             );
           }
           exHeader.attr("colSpan", data.exercises.length);
@@ -3176,7 +3257,7 @@ $(function () {
               data.odsa_exercise_progress[0],
               data.odsa_exercise_attempts,
               data.inst_book_section_exercise,
-              khan_ac_exercise
+              khan_ac_exercise,
             );
 
             var header1 =
@@ -3197,14 +3278,14 @@ $(function () {
                 elem1 += getAttemptMemeber(
                   data.odsa_exercise_attempts[i],
                   proficiencyFlag,
-                  khan_ac_exercise
+                  khan_ac_exercise,
                 );
                 proficiencyFlag = 2;
               } else {
                 elem1 += getAttemptMemeber(
                   data.odsa_exercise_attempts[i],
                   proficiencyFlag,
-                  khan_ac_exercise
+                  khan_ac_exercise,
                 );
               }
             }
@@ -3224,7 +3305,7 @@ $(function () {
               data.inst_section,
               data.odsa_exercise_progress[0],
               data.odsa_exercise_attempts,
-              data.inst_book_section_exercise
+              data.inst_book_section_exercise,
             );
             var header1 =
               '<p style="font-size:24px; align=center;"> OpenDSA Attempt Table <p>';
@@ -3242,13 +3323,13 @@ $(function () {
                 proficiencyFlag = 1;
                 elem1 += getAttemptMemeber(
                   data.odsa_exercise_attempts[i],
-                  proficiencyFlag
+                  proficiencyFlag,
                 );
                 proficiencyFlag = 2;
               } else {
                 elem1 += getAttemptMemeber(
                   data.odsa_exercise_attempts[i],
-                  proficiencyFlag
+                  proficiencyFlag,
                 );
               }
             }
@@ -3422,10 +3503,10 @@ $(function () {
             count = result["data"] + 1 || count;
           }
           var termStartDate = new Date(
-            lookups["term"]["starts_on"] + "T23:59:59-0000"
+            lookups["term"]["starts_on"] + "T23:59:59-0000",
           );
           var termEndDate = new Date(
-            lookups["term"]["ends_on"] + "T23:59:59-0000"
+            lookups["term"]["ends_on"] + "T23:59:59-0000",
           );
           var currentDate = new Date();
           var trackingEndDate =
