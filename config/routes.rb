@@ -25,7 +25,6 @@ OpenDSA::Application.routes.draw do
   get '/odsa_exercise_progresses' => 'odsa_exercise_progresses#show_exercise'
   get  '/odsa_exercise_progresses/get_count' => 'odsa_exercise_progresses#get_count'
   get '/odsa_exercise_progresses/export_all_progress_csv', to: 'odsa_exercise_progresses#export_all_progress_csv', as: :export_all_progress_csv_odsa_exercise_progresses
-  get '/odsa_exercise_attempts/export_all_attempts_csv' => 'odsa_exercise_attempts#export_all_attempts_csv', as: :export_all_attempts_csv_odsa_exercise_attempts
   post '/odsa_exercise_progresses' => 'odsa_exercise_progresses#update'
   get '/odsa_exercise_progresses/:inst_book_id/:inst_section_id/:exercise_name' =>
     'odsa_exercise_progresses#show_exercise'
