@@ -7,12 +7,14 @@ $(function () {
 
   /* ---------------- CSV Download for Module Scores Table ---------------- */
 
+  // Use both delegated and direct handlers for maximum compatibility
   $(document).on("click", "#btn-module-csv", function (e) {
     e.preventDefault();
     e.stopPropagation();
     downloadModuleCSV();
   });
 
+  // Also set up a direct handler once the button appears
   function setupDirectHandler() {
     const btn = document.getElementById("btn-module-csv");
     if (btn) {

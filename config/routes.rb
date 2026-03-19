@@ -14,8 +14,13 @@ OpenDSA::Application.routes.draw do
   get '/odsa_user_interactions/latest_state' => 'odsa_user_interactions#get_latest_state'
   resources :odsa_user_interactions
   resources :odsa_user_time_tracking
+  resources :odsa_exercise_attempts do
+    collection do
+      get :export_all_attempts_csv
+    end
+  end
   resources :course_offerings, only: [] do
-    member { get :export_module_overview_csv }  
+    member { get :export_module_overview_csv }
   end
   get '/odsa_exercise_progresses' => 'odsa_exercise_progresses#show_exercise'
   get  '/odsa_exercise_progresses/get_count' => 'odsa_exercise_progresses#get_count'
